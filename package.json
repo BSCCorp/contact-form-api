@@ -1,0 +1,20 @@
+{
+  "name": "contact-form-api",
+  "version": "1.0.0",
+  "description": "A generic contact form API backed by Express",
+  "homepage": "https://github.com/BSCCorp/contact-form-api#readme",
+  "bugs": {
+    "url": "https://github.com/BSCCorp/contact-form-api/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BSCCorp/contact-form-api.git"
+  },
+  "license": "MIT",
+  "author": "Daniel Bidulock",
+  "type": "commonjs",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}
