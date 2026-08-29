@@ -1,29 +1,23 @@
 const User = require("./user.model");
+const AppError = require("../../utils/AppError");
 
 async function getUserById(id) {
   const user = await User.findById(id).select("-passwordHash");
 
   if (!user) {
-    const error = new Error("User not found");
-    error.statusCode = 404;
-    throw error;
+    throw new AppError("User not found", 404);
   }
 
-  return user;
-}
-
-async function createUser({ name, email, passwordHash }) {
-  const user = await User.create({
-    name,
-    email,
-    passwordHash,
-  });
-
-  return user;
+  return {
+    id: user._id.toString(),
+    name: user.name,
+    email: user.email,
+    createdAt: user.createdAt,
+    updatedAt: user.updatedAt,
+  };
 }
 
 module.exports = {
   getUserById,
-  createUser,
 };
 
