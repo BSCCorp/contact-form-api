@@ -1,6 +1,9 @@
 const { test, expect } = require("../fixtures/database");
+const User = require("../../src/modules/users/user.model");
+const bcrypt = require("bcrypt");
 
 test.describe("Authentication", () => {
+
   test("can register a user", async ({ request }) => {
     const response = await request.post("/api/auth/register", {
       data: {
@@ -192,11 +195,11 @@ test.describe("Authentication", () => {
 
   test("rejects unauthenticated /me request", async ({ request }) => {
     const response = await request.get("/api/auth/me");
-  
+
     expect(response.status()).toBe(401);
-  
+
     const body = await response.json();
-  
+
     expect(body.error).toBe("Authentication required");
   });
 
@@ -206,11 +209,11 @@ test.describe("Authentication", () => {
         Authorization: "Bearer definitely-not-a-real-token",
       },
     });
-  
+
     expect(response.status()).toBe(401);
-  
+
     const body = await response.json();
-  
+
     expect(body.error).toBe("Invalid or expired token");
   });
 
@@ -220,8 +223,88 @@ test.describe("Authentication", () => {
         Authorization: "NotBearer something",
       },
     });
-  
+
     expect(response.status()).toBe(401);
+  });
+
+  test("stores a hashed password", async ({
+    request,
+  }) => {
+    const password = "password123";
+    const email = `hash-${Date.now()}@example.com`;
+
+    const response = await request.post(
+      "/api/auth/register",
+      {
+        data: {
+          name: "Hash Test",
+          email,
+          password,
+        },
+      }
+    );
+
+    expect(response.status()).toBe(201);
+
+    const body = await response.json();
+
+    const user = await User.findById(body.user.id);
+
+    expect(user).toBeTruthy();
+    expect(user.passwordHash).toBeTruthy();
+
+    expect(user.passwordHash).not.toBe(password);
+
+    const matches = await bcrypt.compare(
+      password,
+      user.passwordHash
+    );
+
+    expect(matches).toBe(true);
+  });
+
+  test("normalizes email addresses", async ({
+    request,
+  }) => {
+    const response = await request.post(
+      "/api/auth/register",
+      {
+        data: {
+          name: "Email Test",
+          email: "USER@EXAMPLE.COM",
+          password: "password123",
+        },
+      }
+    );
+
+    expect(response.status()).toBe(201);
+
+    const body = await response.json();
+
+    expect(body.user.email).toBe("user@example.com");
+  });
+
+  test("creates exactly one database record", async ({
+    request,
+  }) => {
+    const email = `db-${Date.now()}@example.com`;
+
+    const response = await request.post(
+      "/api/auth/register",
+      {
+        data: {
+          name: "Database Test",
+          email,
+          password: "password123",
+        },
+      }
+    );
+
+    expect(response.status()).toBe(201);
+
+    const users = await User.find({ email });
+
+    expect(users).toHaveLength(1);
   });
 
 });
