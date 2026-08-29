@@ -1,14 +1,13 @@
 const { z } = require("zod");
 
-const createUserSchema = z.object({
-  name: z.string().min(1).max(100),
-
-  email: z.string().email(),
-
-  password: z.string().min(8),
+const getUserParamsSchema = z.object({
+  id: z.string().regex(
+    /^[a-f\d]{24}$/i,
+    "Invalid user ID"
+  ),
 });
 
 module.exports = {
-  createUserSchema,
+  getUserParamsSchema,
 };
 
