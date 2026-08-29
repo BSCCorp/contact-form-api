@@ -13,14 +13,19 @@ async function clearDatabase() {
   }
 }
 
+
 const test = base.extend({
   database: [
     async ({}, use) => {
       const uri = process.env.MONGODB_URI;
 
       if (!uri) {
+        throw new Error("MONGODB_URI is not defined");
+      }
+
+      if (!uri.includes("_test")) {
         throw new Error(
-          "MONGODB_URI is not defined"
+          `Refusing to run tests against: ${uri}`
         );
       }
 
