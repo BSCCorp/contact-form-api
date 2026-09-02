@@ -2,6 +2,8 @@ const express = require("express");
 
 const authRoutes = require("./modules/auth/auth.routes");
 const userRoutes = require("./modules/users/user.routes");
+const emailAccountRoutes = require("./modules/emailAccounts/emailAccount.routes");
+const contactFormRoutes = require("./modules/contactForms/contactForm.routes");
 
 const errorHandler = require("./middleware/error");
 
@@ -17,6 +19,8 @@ app.get("/health", (req, res) => {
 
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/email-accounts", emailAccountRoutes);
+app.use("/api/contact-forms", contactFormRoutes);
 
 app.use(errorHandler);
 
