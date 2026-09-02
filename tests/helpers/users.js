@@ -1,19 +1,56 @@
-const bcrypt = require("bcrypt");
-const User = require("../../src/modules/users/user.model");
+// tests/helpers/users.js
 
-async function createTestUser() {
+const { expect } = require("@playwright/test");
+
+async function createTestUser(request) {
   const password = "password123";
 
-  const passwordHash = await bcrypt.hash(
-    password,
-    12
-  );
+  const email =
+    `jane-${Date.now()}-${Math.random()
+      .toString(36)
+      .slice(2)}@example.com`;
 
-  return User.create({
+  const registerResponse =
+    await request.post(
+      "/api/auth/register",
+      {
+        data: {
+          name: "Jane Doe",
+          email,
+          password,
+        },
+      }
+    );
+
+  expect(
+    registerResponse.ok()
+  ).toBeTruthy();
+
+  const loginResponse =
+    await request.post(
+      "/api/auth/login",
+      {
+        data: {
+          email,
+          password,
+        },
+      }
+    );
+
+  expect(
+    loginResponse.ok()
+  ).toBeTruthy();
+
+  const body =
+    await loginResponse.json();
+
+  return {
+    id: body.user.id,
+    token: body.token,
+    email,
+    password,
     name: "Jane Doe",
-    email: `jane-${Date.now()}@example.com`,
-    passwordHash,
-  });
+  };
 }
 
 module.exports = {
