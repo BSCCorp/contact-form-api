@@ -39,7 +39,7 @@ test.describe("Users API", () => {
     const token = await login(request, user);
 
     const response = await request.get(
-      `/api/users/${user._id}`,
+      `/api/users/${user.id}`,
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -51,7 +51,7 @@ test.describe("Users API", () => {
 
     const body = await response.json();
 
-    expect(body.id).toBe(user._id.toString());
+    expect(body.id).toBe(user.id.toString());
     expect(body.name).toBe(user.name);
     expect(body.email).toBe(user.email);
   });
@@ -63,7 +63,7 @@ test.describe("Users API", () => {
     const token = await login(request, user);
 
     const response = await request.get(
-      `/api/users/${user._id}`,
+      `/api/users/${user.id}`,
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -85,7 +85,7 @@ test.describe("Users API", () => {
     const user = await createTestUser(request);
 
     const response = await request.get(
-      `/api/users/${user._id}`
+      `/api/users/${user.id}`
     );
 
     expect(response.status()).toBe(401);
@@ -103,7 +103,7 @@ test.describe("Users API", () => {
     const user = await createTestUser(request);
 
     const response = await request.get(
-      `/api/users/${user._id}`,
+      `/api/users/${user.id}`,
       {
         headers: {
           Authorization: "Bearer invalid-token",
