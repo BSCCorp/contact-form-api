@@ -306,6 +306,5 @@ test.describe("Authentication", () => {
 
     expect(users).toHaveLength(1);
   });
-
 });
 
