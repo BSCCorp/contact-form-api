@@ -28,10 +28,12 @@
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.9.4",
+    "nodemailer": "^9.1.0",
     "zod": "^4.5.1"
   },
   "devDependencies": {
     "@playwright/test": "^1.62.1",
+    "maildev": "^3.0.0-rc.2",
     "nodemon": "^3.1.14"
   }
 }
