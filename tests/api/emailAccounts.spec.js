@@ -331,6 +331,36 @@ test.describe("Email Accounts API", () => {
         "super-secret-password"
       );
     });
+
+    test("generates a public ID", async ({ request }) => {
+      const user = await createTestUser(request);
+
+      const account = await createEmailAccount(
+        request,
+        user.token
+      );
+
+      expect(account.data.publicId).toBeTruthy();
+      expect(typeof account.data.publicId).toBe(
+        "string"
+      );
+    });
+
+    test("public ID is different from Mongo ID", async ({
+      request,
+    }) => {
+      const user = await createTestUser(request);
+
+      const account = await createEmailAccount(
+        request,
+        user.token
+      );
+
+      expect(account.data.publicId).not.toBe(
+        account.data._id
+      );
+    });
+
   });
 
   test.describe("list", () => {
@@ -397,6 +427,35 @@ test.describe("Email Accounts API", () => {
       expect(accounts[0]).not.toHaveProperty("password");
       expect(accounts[0]).not.toHaveProperty(
         "encryptedPassword"
+      );
+    });
+
+    test("returns the public ID when listing accounts", async ({
+      request,
+    }) => {
+      const user = await createTestUser(request);
+
+      const account = await createEmailAccount(
+        request,
+        user.token
+      );
+
+      const response = await request.get(
+        "/api/email-accounts",
+        {
+          headers: {
+            Authorization: `Bearer ${user.token}`,
+          },
+        }
+      );
+
+      expect(response.status()).toBe(200);
+
+      const { data: accounts } =
+        await response.json();
+
+      expect(accounts[0].publicId).toBe(
+        account.data.publicId
       );
     });
   });
@@ -496,6 +555,34 @@ test.describe("Email Accounts API", () => {
       );
 
       expect(response.status()).toBe(404);
+    });
+
+    test("returns the public ID when retrieving an account", async ({
+      request,
+    }) => {
+      const user = await createTestUser(request);
+
+      const account = await createEmailAccount(
+        request,
+        user.token
+      );
+
+      const response = await request.get(
+        `/api/email-accounts/${account.data._id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${user.token}`,
+          },
+        }
+      );
+
+      expect(response.status()).toBe(200);
+
+      const body = await response.json();
+
+      expect(body.data.publicId).toBe(
+        account.data.publicId
+      );
     });
   });
 
@@ -772,9 +859,9 @@ test.describe("Email Accounts API", () => {
     request,
   }) => {
     const user = await createTestUser(request);
-  
+
     const password = "test-password-123";
-  
+
     const account = await createEmailAccount(
       request,
       user.token,
@@ -782,20 +869,20 @@ test.describe("Email Accounts API", () => {
         password,
       }
     );
-  
+
     const storedAccount = await EmailAccount.findById(
       account.data._id
     ).lean();
-  
+
     expect(storedAccount.encryptedPassword).toBeDefined();
     expect(storedAccount.encryptedPassword).not.toBe(password);
-  
+
     const emailAccount =
       await getEmailAccountForSending(
         user.id,
         account.data._id
       );
-  
+
     expect(emailAccount.password).toBe(password);
   });
 });
