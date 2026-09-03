@@ -15,13 +15,18 @@ function ContactFormEmbed({ account }) {
   }, [account.publicId, apiUrl]);
 
   async function copyHtml() {
-    await navigator.clipboard.writeText(html);
-    setCopied(true);
+    try {
+      await navigator.clipboard.writeText(html);
+      setCopied(true);
 
-    setTimeout(() => {
-      setCopied(false);
-    }, 2000);
+      setTimeout(() => {
+        setCopied(false);
+      }, 2000);
+    } catch (error) {
+      console.error("Failed to copy HTML:", error);
+    }
   }
+
 
   return (
     <section>
