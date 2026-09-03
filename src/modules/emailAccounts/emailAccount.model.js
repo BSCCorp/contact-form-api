@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const { randomUUID } = require("crypto");
 
 const emailAccountSchema = new mongoose.Schema(
   {
@@ -7,6 +8,14 @@ const emailAccountSchema = new mongoose.Schema(
       ref: "User",
       required: true,
       index: true,
+    },
+
+    publicId: {
+      type: String,
+      required: true,
+      unique: true,
+      index: true,
+      default: randomUUID,
     },
 
     name: {

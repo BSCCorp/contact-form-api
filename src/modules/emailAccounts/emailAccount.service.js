@@ -101,6 +101,29 @@ async function getEmailAccountForSending(userId, emailAccountId) {
   };
 }
 
+async function getPublicEmailAccountForSending(
+  publicId
+) {
+  const account = await EmailAccount.findOne({
+    publicId,
+  });
+
+  if (!account) {
+    throw new AppError(
+      "Contact form not found",
+      404
+    );
+  }
+
+  return {
+    ...account.toObject(),
+    password: decrypt(
+      account.encryptedPassword
+    ),
+  };
+}
+
+
 
 async function updateEmailAccount(userId, accountId, data) {
   const account = await EmailAccount.findOneAndUpdate(
@@ -173,6 +196,7 @@ module.exports = {
   getEmailAccount,
   getEmailAccountCredentials,
   getEmailAccountForSending,
+  getPublicEmailAccountForSending,
   updateEmailAccount,
   deleteEmailAccount,
   testEmailAccount,
