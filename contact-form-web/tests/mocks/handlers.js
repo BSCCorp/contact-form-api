@@ -202,5 +202,30 @@ export const handlers = [
       status: 204,
     });
   }),
+
+  http.post(
+    "/api/contact-forms/public/:publicId",
+    async ({ request, params }) => {
+      const formData = await request.formData();
+
+      return HttpResponse.json(
+        {
+          data: {
+            ...contactForm,
+            _id: "contact-public-new",
+            userId: "user-1",
+            emailAccountId: "account-1",
+            name: formData.get("name"),
+            email: formData.get("email"),
+            subject: formData.get("subject"),
+            message: formData.get("message"),
+            publicId: params.publicId,
+          },
+        },
+        { status: 201 }
+      );
+    }
+  ),
+
 ];
 
