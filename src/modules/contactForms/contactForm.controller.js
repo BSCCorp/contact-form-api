@@ -20,6 +20,22 @@ async function create(
   }
 }
 
+async function createPublic(req, res, next) {
+  try {
+    const contactForm =
+      await contactFormService.createPublicContactForm(
+        req.params.publicId,
+        req.body
+      );
+
+    res.status(201).json({
+      data: contactForm,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 async function list(
   req,
   res,
@@ -66,6 +82,7 @@ async function remove(req, res, next) {
 
 module.exports = {
   create,
+  createPublic,
   list,
   getOne,
   remove,

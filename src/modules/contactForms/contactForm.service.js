@@ -1,8 +1,10 @@
 const ContactForm = require("./contactForm.model.js");
 const AppError = require("../../utils/AppError.js");
 const { sendMail } = require("../../services/email.service.js");
+const EmailAccount = require("../emailAccounts/emailAccount.model.js");
 const {
   getEmailAccountForSending,
+  getPublicEmailAccountForSending,
 } = require("../emailAccounts/emailAccount.service.js");
 
 async function createContactForm(userId, data) {
@@ -57,6 +59,72 @@ async function createContactForm(userId, data) {
   return contactForm;
 }
 
+async function createPublicContactForm(
+  publicId,
+  data
+) {
+  const account =
+    await getPublicEmailAccountForSending(
+      publicId
+    );
+
+  const recipient =
+    account.from || account.username;
+
+  const contactForm =
+    await ContactForm.create({
+      userId: account.userId,
+      emailAccountId: account._id,
+      name: data.name,
+      email: data.email,
+      subject: data.subject,
+      message: data.message,
+    });
+
+  try {
+    await sendMail(
+      {
+        host: account.host,
+        port: account.port,
+        secure: account.secure,
+        username: account.username,
+        password: account.password,
+      },
+      {
+        from: recipient,
+        to: recipient,
+        replyTo: data.email,
+        subject: data.subject,
+        text: [
+          `Name: ${data.name}`,
+          `Email: ${data.email}`,
+          "",
+          data.message,
+        ].join("\n"),
+      }
+    );
+
+    contactForm.deliveryStatus = "sent";
+    contactForm.deliveryError = undefined;
+
+  } catch (error) {
+    contactForm.deliveryStatus = "failed";
+    contactForm.deliveryError = error.message;
+
+    await contactForm.save();
+
+    throw new AppError(
+      "Failed to send contact form",
+      502
+    );
+  }
+
+  await contactForm.save();
+
+  return contactForm;
+}
+
+
 async function getContactForms(userId) {
   return ContactForm.find({ userId })
     .sort({ createdAt: -1 })
@@ -99,6 +167,7 @@ async function deleteContactForm(
 
 module.exports = {
   createContactForm,
+  createPublicContactForm,
   getContactForms,
   getContactForm,
   deleteContactForm,
