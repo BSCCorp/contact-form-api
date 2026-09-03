@@ -138,3 +138,63 @@ And,
 SERVER_USER = deploy
 ```
 
+## Create a GitHub token for the server
+
+Go to GitHub:
+
+**Settings → Developer settings → Personal access tokens → Tokens (classic)**
+
+Create a classic token with:
+
+```
+read:packages
+```
+
+You only need package read access for the server.
+
+Don't use the GitHub Actions SSH key for this—this is a separate credential.
+
+
+Log Docker into GHCR on Ubuntu. On the server, run:
+
+```
+docker login ghcr.io
+```
+
+When prompted:
+
+```
+Username:
+```
+
+enter your GitHub username.
+
+For:
+
+```
+Password:
+```
+
+paste the GitHub token.
+
+You should get:
+
+```
+Login Succeeded
+```
+
+Then test:
+
+```
+docker pull ghcr.io/bsccorp/contact-form-api:latest
+```
+
+and:
+
+```
+docker pull ghcr.io/bsccorp/contact-form-web:latest
+```
+
+If both work, your authentication is fixed.
+
+
