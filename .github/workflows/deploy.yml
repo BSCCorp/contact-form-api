@@ -67,6 +67,7 @@ jobs:
       - name: Build frontend
         run: |
           docker build \
+            --build-arg VITE_API_URL=/api \
             -t $WEB_IMAGE:${{ github.sha }} \
             -t $WEB_IMAGE:latest \
             ./frontend
