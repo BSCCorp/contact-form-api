@@ -171,6 +171,8 @@ async function testEmailAccount(userId, accountId) {
       password: account.password,
     });
   } catch (error) {
+    console.error("SMTP verification failed:", error);
+
     throw new AppError(
       "SMTP verification failed",
       502
@@ -181,6 +183,7 @@ async function testEmailAccount(userId, accountId) {
     success: true,
   };
 }
+
 
 function sanitize(account) {
   const object = account.toObject();
