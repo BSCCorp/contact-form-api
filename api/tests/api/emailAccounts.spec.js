@@ -699,6 +699,63 @@ test.describe("Email Accounts API", () => {
 
       expect(response.status()).toBe(404);
     });
+
+    test("updates the SMTP password when a new password is provided", async ({
+      request,
+    }) => {
+      const user = await createTestUser(request);
+
+      const account = await createEmailAccount(
+        request,
+        user.token,
+        {
+          password: "old-password",
+        }
+      );
+
+      const response = await request.put(
+        `/api/email-accounts/${account.data._id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${user.token}`,
+          },
+          data: {
+            password: "new-password",
+          },
+        }
+      );
+
+      expect(response.status()).toBe(200);
+
+      const storedAccount =
+        await EmailAccount.findById(
+          account.data._id
+        ).lean();
+
+      expect(
+        storedAccount.encryptedPassword
+      ).toBeTruthy();
+
+      expect(
+        storedAccount.encryptedPassword
+      ).not.toBe("new-password");
+
+      const {
+        getEmailAccountForSending,
+      } = require(
+        "../../src/modules/emailAccounts/emailAccount.service.js"
+      );
+
+      const sendingAccount =
+        await getEmailAccountForSending(
+          user.id,
+          account.data._id
+        );
+
+      expect(sendingAccount.password).toBe(
+        "new-password"
+      );
+    });
   });
 
   test.describe("delete", () => {

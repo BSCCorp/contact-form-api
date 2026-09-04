@@ -110,7 +110,7 @@ async function getPublicEmailAccountForSending(
 
   if (!account) {
     throw new AppError(
-      "Contact form not found",
+      "Email account not found",
       404
     );
   }
@@ -124,23 +124,41 @@ async function getPublicEmailAccountForSending(
 }
 
 
+async function updateEmailAccount(
+  userId,
+  accountId,
+  data
+) {
+  const {
+    password,
+    ...updates
+  } = data;
 
-async function updateEmailAccount(userId, accountId, data) {
-  const account = await EmailAccount.findOneAndUpdate(
-    {
-      _id: accountId,
-      userId,
-    },
-    data,
-    {
-      returnDocument: "after",
-      runValidators: true,
-    }
-  ).lean();
+  if (password) {
+    updates.encryptedPassword = encrypt(password);
+  }
+
+  const account =
+    await EmailAccount.findOneAndUpdate(
+      {
+        _id: accountId,
+        userId,
+      },
+      updates,
+      {
+        returnDocument: "after",
+        runValidators: true,
+      }
+    ).lean();
 
   if (!account) {
-    throw new AppError("Email account not found", 404);
+    throw new AppError(
+      "Email account not found",
+      404
+    );
   }
+
+  delete account.encryptedPassword;
 
   return account;
 }
