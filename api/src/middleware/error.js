@@ -6,10 +6,9 @@ function errorHandler(err, req, res, next) {
   }
 
   res.status(status).json({
-    error:
-      status >= 500
-        ? "Internal server error"
-        : err.message,
+    error: err.isOperational
+      ? err.message
+      : "Internal server error",
   });
 }
 
