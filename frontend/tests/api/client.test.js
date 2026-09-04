@@ -275,13 +275,11 @@ describe("apiFetch", () => {
     ).rejects.toThrow("Request failed");
   });
 
-  it("uses Request failed when the JSON response has no error property", async () => {
+  it("uses the status code when the JSON response has no error or message", async () => {
     const response = {
       ok: false,
       status: 400,
-      json: vi.fn().mockResolvedValue({
-        message: "Bad request",
-      }),
+      json: vi.fn().mockResolvedValue({}),
     };
 
     vi.spyOn(globalThis, "fetch").mockResolvedValue(response);
@@ -290,7 +288,7 @@ describe("apiFetch", () => {
       await apiFetch("/bad-request");
       throw new Error("Expected apiFetch to throw");
     } catch (error) {
-      expect(error.message).toBe("Request failed");
+      expect(error.message).toBe("Request failed (400)");
       expect(error.status).toBe(400);
     }
   });

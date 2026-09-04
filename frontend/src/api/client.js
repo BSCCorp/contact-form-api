@@ -27,11 +27,14 @@ export async function apiFetch(path, options = {}) {
   );
 
   if (!response.ok) {
-    let message = "Request failed";
+    let message = `Request failed (${response.status})`;
 
     try {
       const body = await response.json();
-      message = body.error || message;
+      message =
+        body.error ||
+        body.message ||
+        message;
     } catch {
       // Response wasn't JSON.
     }
