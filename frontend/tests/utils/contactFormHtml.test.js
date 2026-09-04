@@ -79,5 +79,27 @@ describe("generateContactFormHtml", () => {
       "api.example.com//api/"
     );
   });
+
+  it("generates an absolute public contact form URL", () => {
+    const html = generateContactFormHtml(
+      "abc123",
+      "https://0yy.ca/api"
+    );
+
+    expect(html).toContain(
+      'action="https://0yy.ca/api/contact-forms/public/abc123"'
+    );
+  });
+
+  it("does not produce a double slash", () => {
+    const html = generateContactFormHtml(
+      "abc123",
+      "https://0yy.ca/api/"
+    );
+
+    expect(html).toContain(
+      'action="https://0yy.ca/api/contact-forms/public/abc123"'
+    );
+  });
 });
 
