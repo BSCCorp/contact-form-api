@@ -14,7 +14,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import EmailAccounts from "./pages/EmailAccounts";
-import EmailAccountForm from "./pages/EmailAccountForm";
+import EmailAccount from "./pages/EmailAccount";
 import ContactForms from "./pages/ContactForms";
 import ContactFormDetails from "./pages/ContactFormDetails";
 
@@ -52,12 +52,12 @@ export default function App() {
 
             <Route
               path="/email-accounts/new"
-              element={<EmailAccountForm />}
+              element={<EmailAccount />}
             />
 
             <Route
               path="/email-accounts/:id/edit"
-              element={<EmailAccountForm />}
+              element={<EmailAccount />}
             />
 
             <Route
