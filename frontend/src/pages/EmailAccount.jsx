@@ -6,6 +6,8 @@ import {
 
 import * as emailAccountsApi from "../api/emailAccounts";
 
+import ContactFormEmbed from "../components/ContactFormEmbed";
+
 const initialForm = {
   name: "",
   host: "",
@@ -16,7 +18,7 @@ const initialForm = {
   from: "",
 };
 
-export default function EmailAccountForm() {
+export default function EmailAccount() {
   const { id } = useParams();
   const navigate = useNavigate();
 
@@ -256,6 +258,9 @@ export default function EmailAccountForm() {
           </button>
         </div>
       </form>
+      {editing && form.publicId && (
+        <ContactFormEmbed account={form} />
+      )}
     </>
   );
 }
