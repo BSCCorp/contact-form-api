@@ -68,14 +68,14 @@ describe("ContactFormEmbed", () => {
     ).toBeInTheDocument();
   });
 
-  it("renders the generated HTML", () => {
+  it("renders the absolute public contact form endpoint", () => {
     renderComponent();
 
-    const textarea =
-      screen.getByLabelText("Contact form HTML");
+    const html =
+      screen.getByLabelText("Contact form HTML").value;
 
-    expect(textarea.value).toContain(
-      "/api/contact-forms/public/contact-form-public-123"
+    expect(html).toContain(
+      `action="${window.location.origin}/api/contact-forms/public/contact-form-public-123"`
     );
   });
 
@@ -183,25 +183,25 @@ describe("ContactFormEmbed", () => {
 
   it("copies the generated HTML to the clipboard", async () => {
     renderComponent();
-  
+
     const textarea =
       screen.getByLabelText("Contact form HTML");
-  
+
     const button =
       screen.getByRole("button", {
         name: "Copy HTML",
       });
-  
+
     await act(async () => {
       button.click();
-  
+
       // Wait for navigator.clipboard.writeText()
       // and the resulting React state update.
       await Promise.resolve();
     });
-  
+
     expect(writeTextMock).toHaveBeenCalledTimes(1);
-  
+
     expect(writeTextMock).toHaveBeenCalledWith(
       textarea.value
     );
@@ -228,30 +228,30 @@ describe("ContactFormEmbed", () => {
 
   it("changes back to Copy HTML after 2 seconds", async () => {
     vi.useFakeTimers();
-  
+
     renderComponent();
-  
+
     const button = screen.getByRole("button", {
       name: "Copy HTML",
     });
-  
+
     await act(async () => {
       button.click();
-  
+
       // Allow the clipboard promise to resolve.
       await Promise.resolve();
     });
-  
+
     expect(
       screen.getByRole("button", {
         name: "Copied!",
       })
     ).toBeInTheDocument();
-  
+
     await act(async () => {
       vi.advanceTimersByTime(2000);
     });
-  
+
     expect(
       screen.getByRole("button", {
         name: "Copy HTML",

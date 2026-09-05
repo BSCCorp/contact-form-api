@@ -4,8 +4,7 @@ import { generateContactFormHtml } from "../utils/contactFormHtml";
 function ContactFormEmbed({ account }) {
   const [copied, setCopied] = useState(false);
 
-  const apiUrl =
-    import.meta.env.VITE_API_URL || "";
+  const apiUrl = window.location.origin;
 
   const html = useMemo(() => {
     return generateContactFormHtml(
