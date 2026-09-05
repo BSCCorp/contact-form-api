@@ -283,7 +283,6 @@ test.describe("Contact Forms API", () => {
       );
     });
 
-
   });
 
   test.describe("public submission validation", () => {
@@ -374,6 +373,47 @@ test.describe("Contact Forms API", () => {
       );
 
       expect(response.status()).toBe(400);
+    });
+
+    test("accepts application/x-www-form-urlencoded submissions", async ({
+      request,
+    }) => {
+      const user = await createTestUser(request);
+
+      const account = await createEmailAccount(
+        request,
+        user.token
+      );
+
+      const response = await request.post(
+        `/api/contact-forms/public/${account.data.publicId}`,
+        {
+          form: {
+            name: "Form User",
+            email: "form@example.com",
+            subject: "URL encoded submission",
+            message:
+              "This submission was sent using application/x-www-form-urlencoded.",
+          },
+        }
+      );
+
+      expect(response.status()).toBe(201);
+
+      const body = await response.json();
+
+      expect(body.data).toMatchObject({
+        name: "Form User",
+        email: "form@example.com",
+        subject: "URL encoded submission",
+        message:
+          "This submission was sent using application/x-www-form-urlencoded.",
+      });
+
+      expect(body.data.userId).toBe(user.id);
+      expect(body.data.emailAccountId).toBe(
+        account.data._id
+      );
     });
   });
 
