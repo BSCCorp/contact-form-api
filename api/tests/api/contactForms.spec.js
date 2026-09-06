@@ -29,7 +29,7 @@ test.describe("Contact Forms API", () => {
       const response = await request.post(
         `/api/contact-forms/public/${account.data.publicId}`,
         {
-          data: {
+          form: {
             name: "Jane Doe",
             email: "jane@example.com",
             subject: "Test contact form",
@@ -39,21 +39,21 @@ test.describe("Contact Forms API", () => {
         }
       );
 
-      expect(response.status()).toBe(201);
+      expect(response.status()).toBe(200);
 
-      const body = await response.json();
+      expect(response.url()).toContain(
+        "/api/contact-forms/public/success"
+      );
 
-      expect(body.data).toMatchObject({
-        name: "Jane Doe",
-        email: "jane@example.com",
-        subject: "Test contact form",
-        message:
-          "This is a test contact form message.",
-      });
+      expect(
+        response.headers()["content-type"]
+      ).toContain("text/html");
 
-      expect(body.data.userId).toBe(user.id);
-      expect(body.data.emailAccountId).toBe(
-        account.data._id
+      const html = await response.text();
+
+      expect(html).toContain("Message sent");
+      expect(html).toContain(
+        "Thanks for getting in touch"
       );
     });
 
@@ -84,7 +84,7 @@ test.describe("Contact Forms API", () => {
         }
       );
 
-      expect(response.status()).toBe(201);
+      expect(response.status()).toBe(200);
 
       const emails = await waitForMail(request);
 
@@ -138,7 +138,7 @@ test.describe("Contact Forms API", () => {
         }
       );
 
-      expect(response.status()).toBe(201);
+      expect(response.status()).toBe(200);
 
       const emails = await waitForMail(request);
 
@@ -198,7 +198,7 @@ test.describe("Contact Forms API", () => {
         }
       );
 
-      expect(response.status()).toBe(201);
+      expect(response.status()).toBe(200);
     });
 
     test("does not accept an email account Mongo ID as public ID", async ({
@@ -268,7 +268,7 @@ test.describe("Contact Forms API", () => {
         }
       );
 
-      expect(response.status()).toBe(201);
+      expect(response.status()).toBe(200);
 
       const emails = await waitForMail(request);
 
@@ -283,6 +283,64 @@ test.describe("Contact Forms API", () => {
       );
     });
 
+    test("redirects to the success page after a successful public submission", async ({
+      request,
+    }) => {
+      const user = await createTestUser(request);
+
+      const account = await createEmailAccount(
+        request,
+        user.token
+      );
+
+      const response = await request.post(
+        `/api/contact-forms/public/${account.data.publicId}`,
+        {
+          form: {
+            name: "Jane Doe",
+            email: "jane@example.com",
+            subject: "Test redirect",
+            message: "Testing the success page redirect.",
+          },
+        }
+      );
+
+      expect(response.status()).toBe(200);
+
+      expect(response.url()).toBe(
+        "http://localhost:3000/api/contact-forms/public/success"
+      );
+
+      expect(
+        response.headers()["content-type"]
+      ).toContain("text/html");
+
+      const html = await response.text();
+
+      expect(html).toContain("Message sent");
+      expect(html).toContain(
+        "Thanks for getting in touch"
+      );
+    });
+
+    test("serves the public contact form success page", async ({
+      request,
+    }) => {
+      const response = await request.get(
+        "/api/contact-forms/public/success"
+      );
+
+      expect(response.status()).toBe(200);
+
+      expect(
+        response.headers()["content-type"]
+      ).toContain("text/html");
+
+      const body = await response.text();
+
+      expect(body).toContain("Message sent");
+      expect(body).toContain("Thanks for getting in touch");
+    });
   });
 
   test.describe("public submission validation", () => {
@@ -398,21 +456,38 @@ test.describe("Contact Forms API", () => {
         }
       );
 
-      expect(response.status()).toBe(201);
+      expect(response.status()).toBe(200);
 
-      const body = await response.json();
+      expect(response.url()).toContain(
+        "/api/contact-forms/public/success"
+      );
 
-      expect(body.data).toMatchObject({
-        name: "Form User",
-        email: "form@example.com",
-        subject: "URL encoded submission",
-        message:
-          "This submission was sent using application/x-www-form-urlencoded.",
-      });
+      expect(
+        response.headers()["content-type"]
+      ).toContain("text/html");
 
-      expect(body.data.userId).toBe(user.id);
-      expect(body.data.emailAccountId).toBe(
-        account.data._id
+      const html = await response.text();
+
+      expect(html).toContain("Message sent");
+
+      const emails = await waitForMail(request);
+
+      expect(emails).toHaveLength(1);
+
+      expect(emails[0].subject).toBe(
+        "URL encoded submission"
+      );
+
+      expect(emails[0].text).toContain(
+        "This submission was sent using application/x-www-form-urlencoded."
+      );
+
+      expect(emails[0].text).toContain(
+        "Form User"
+      );
+
+      expect(emails[0].text).toContain(
+        "form@example.com"
       );
     });
   });

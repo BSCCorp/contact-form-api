@@ -1,4 +1,5 @@
 const express = require("express");
+const path = require("path");
 const authenticate = require("../../middleware/auth.js");
 const validate = require("../../middleware/validate.js");
 
@@ -25,6 +26,18 @@ router.post(
   createPublic
 );
 
+router.get(
+  "/public/success",
+  (req, res) => {
+    res.sendFile(
+      path.join(
+        __dirname,
+        "../../public/contact-form-success.html"
+      )
+    );
+  }
+);
+
 // Everything below here requires authentication
 router.use(authenticate);
 
@@ -49,4 +62,3 @@ router.delete(
 );
 
 module.exports = router;
-

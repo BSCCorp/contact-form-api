@@ -28,9 +28,10 @@ async function createPublic(req, res, next) {
         req.body
       );
 
-    res.status(201).json({
-      data: contactForm,
-    });
+    return res.redirect(
+      303,
+      "/api/contact-forms/public/success"
+    );
   } catch (error) {
     next(error);
   }
