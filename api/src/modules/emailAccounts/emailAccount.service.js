@@ -1,6 +1,10 @@
 const EmailAccount = require("./emailAccount.model");
 const AppError = require("../../utils/AppError");
 const { verifySmtp } = require("../../services/email.service.js");
+const {
+  normalizeOrigin,
+} = require("../../utils/origin.js");
+
 
 const {
   encrypt,
@@ -11,13 +15,29 @@ async function createEmailAccount(userId, data) {
   const {
     password,
     from,
+    allowedOrigin,
     ...rest
   } = data;
+
+  let normalizedAllowedOrigin;
+
+  if (allowedOrigin) {
+    try {
+      normalizedAllowedOrigin =
+        normalizeOrigin(allowedOrigin);
+    } catch (error) {
+      throw new AppError(
+        "Invalid allowed origin",
+        400
+      );
+    }
+  }
 
   const emailAccount =
     await EmailAccount.create({
       ...rest,
       userId,
+      allowedOrigin: normalizedAllowedOrigin,
       from: from || data.username,
       encryptedPassword: encrypt(password),
     });
@@ -102,7 +122,8 @@ async function getEmailAccountForSending(userId, emailAccountId) {
 }
 
 async function getPublicEmailAccountForSending(
-  publicId
+  publicId,
+  requestOrigin
 ) {
   const account = await EmailAccount.findOne({
     publicId,
@@ -115,14 +136,36 @@ async function getPublicEmailAccountForSending(
     );
   }
 
+  // Origin is optional.
+  if (requestOrigin) {
+    let normalizedOrigin;
+
+    try {
+      normalizedOrigin =
+        normalizeOrigin(requestOrigin);
+    } catch {
+      throw new AppError(
+        "Invalid origin",
+        403
+      );
+    }
+
+    if (
+      normalizedOrigin !==
+      account.allowedOrigin
+    ) {
+      throw new AppError(
+        "Origin not allowed",
+        403
+      );
+    }
+  }
+
   return {
     ...account.toObject(),
-    password: decrypt(
-      account.encryptedPassword
-    ),
+    password: decrypt(account.encryptedPassword),
   };
 }
-
 
 async function updateEmailAccount(
   userId,

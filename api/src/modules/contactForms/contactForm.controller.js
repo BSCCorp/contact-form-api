@@ -20,21 +20,36 @@ async function create(
   }
 }
 
-async function createPublic(req, res, next) {
-  try {
-    const contactForm =
-      await contactFormService.createPublicContactForm(
-        req.params.publicId,
-        req.body
-      );
+async function createPublic(req, res) {
+  await contactFormService.createPublicContactForm(
+    req.params.publicId,
+    req.body,
+  );
 
-    return res.redirect(
-      303,
-      "/api/contact-forms/public/success"
-    );
-  } catch (error) {
-    next(error);
+  const referer = req.get("referer");
+
+  if (referer) {
+    try {
+      const url = new URL(referer);
+
+      if (
+        url.protocol === "http:" ||
+        url.protocol === "https:"
+      ) {
+        return res.redirect(
+          303,
+          `/api/contact-forms/public/success?return_to=${encodeURIComponent(url.href)}`
+        );
+      }
+    } catch {
+      // Fall through to the default success page.
+    }
   }
+
+  return res.redirect(
+    303,
+    "/api/contact-forms/public/success"
+  );
 }
 
 async function list(

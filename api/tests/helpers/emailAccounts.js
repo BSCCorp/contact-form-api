@@ -13,6 +13,7 @@ async function createEmailAccount(
     username: "sender@example.com",
     password: "test-password",
     from: "sender@example.com",
+    allowedOrigin: "http://example.com",
     ...overrides,
   };
 

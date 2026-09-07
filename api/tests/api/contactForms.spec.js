@@ -29,12 +29,13 @@ test.describe("Contact Forms API", () => {
       const response = await request.post(
         `/api/contact-forms/public/${account.data.publicId}`,
         {
-          form: {
+          data: {
             name: "Jane Doe",
             email: "jane@example.com",
             subject: "Test contact form",
             message:
               "This is a test contact form message.",
+            origin: "http://example.com",
           },
         }
       );

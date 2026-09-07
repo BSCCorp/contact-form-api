@@ -61,11 +61,11 @@ async function createContactForm(userId, data) {
 
 async function createPublicContactForm(
   publicId,
-  data
+  data,
 ) {
   const account =
     await getPublicEmailAccountForSending(
-      publicId
+      publicId,
     );
 
   const recipient =
