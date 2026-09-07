@@ -5,10 +5,12 @@ import {
   it,
   vi,
 } from "vitest";
+
 import {
   render,
   screen,
 } from "@testing-library/react";
+
 import userEvent from "@testing-library/user-event";
 
 import EmailAccountForm from "../../src/components/EmailAccountForm";
@@ -22,6 +24,7 @@ const existingAccount = {
   secure: false,
   username: "sender@example.com",
   from: "sender@example.com",
+  allowedOrigin: "https://example.com",
 };
 
 describe("EmailAccountForm", () => {
@@ -61,6 +64,10 @@ describe("EmailAccountForm", () => {
     ).toBeInTheDocument();
 
     expect(
+      screen.getByLabelText(/allowed origin/i)
+    ).toBeInTheDocument();
+
+    expect(
       screen.getByLabelText(/use secure connection/i)
     ).toBeInTheDocument();
   });
@@ -92,6 +99,10 @@ describe("EmailAccountForm", () => {
     expect(
       screen.getByLabelText(/from address/i)
     ).toHaveValue("sender@example.com");
+
+    expect(
+      screen.getByLabelText(/allowed origin/i)
+    ).toHaveValue("https://example.com");
   });
 
   it("allows the account fields to be edited", async () => {
@@ -193,6 +204,31 @@ describe("EmailAccountForm", () => {
     expect(secureInput).toBeChecked();
   });
 
+  it("allows the allowed origin to be edited", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <EmailAccountForm
+        initialValues={existingAccount}
+        onSubmit={vi.fn()}
+      />
+    );
+
+    const allowedOriginInput =
+      screen.getByLabelText(/allowed origin/i);
+
+    await user.clear(allowedOriginInput);
+
+    await user.type(
+      allowedOriginInput,
+      "https://new-example.com"
+    );
+
+    expect(allowedOriginInput).toHaveValue(
+      "https://new-example.com"
+    );
+  });
+
   it("requires a password when creating an account", () => {
     render(
       <EmailAccountForm
@@ -279,6 +315,7 @@ describe("EmailAccountForm", () => {
       username: "sender@example.com",
       password: "secret",
       from: "sender@example.com",
+      allowedOrigin: "",
     });
   });
 
@@ -300,19 +337,26 @@ describe("EmailAccountForm", () => {
     );
 
     expect(onSubmit).toHaveBeenCalledWith({
-      _id: "account-1",
-      publicId: "account-public-1",
       name: "My SMTP Account",
       host: "127.0.0.1",
       port: 1025,
       secure: false,
       username: "sender@example.com",
       from: "sender@example.com",
+      allowedOrigin: "https://example.com",
     });
 
     expect(
       onSubmit.mock.calls[0][0]
     ).not.toHaveProperty("password");
+
+    expect(
+      onSubmit.mock.calls[0][0]
+    ).not.toHaveProperty("_id");
+
+    expect(
+      onSubmit.mock.calls[0][0]
+    ).not.toHaveProperty("publicId");
   });
 
   it("includes a new password when editing if one is provided", async () => {
@@ -338,7 +382,13 @@ describe("EmailAccountForm", () => {
     );
 
     expect(onSubmit).toHaveBeenCalledWith({
-      ...existingAccount,
+      name: "My SMTP Account",
+      host: "127.0.0.1",
+      port: 1025,
+      secure: false,
+      username: "sender@example.com",
+      from: "sender@example.com",
+      allowedOrigin: "https://example.com",
       password: "new-secret",
     });
   });
@@ -377,22 +427,6 @@ describe("EmailAccountForm", () => {
     ).not.toBeInTheDocument();
   });
 
-  it("does not render the contact form embed without a publicId", () => {
-    render(
-      <EmailAccountForm
-        initialValues={{
-          ...existingAccount,
-          publicId: undefined,
-        }}
-        onSubmit={vi.fn()}
-      />
-    );
-
-    expect(
-      screen.queryByText(/website contact form/i)
-    ).not.toBeInTheDocument();
-  });
-
   it("disables the save button while submitting", () => {
     render(
       <EmailAccountForm
@@ -409,4 +443,3 @@ describe("EmailAccountForm", () => {
     expect(submitButton).toBeDisabled();
   });
 });
-

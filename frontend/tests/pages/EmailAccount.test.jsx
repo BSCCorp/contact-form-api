@@ -1,10 +1,19 @@
-import { describe, expect, it, vi } from "vitest";
+import {
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
+
 import {
   render,
   screen,
   waitFor,
 } from "@testing-library/react";
+
 import userEvent from "@testing-library/user-event";
+
 import {
   MemoryRouter,
   Route,
@@ -21,9 +30,17 @@ vi.mock("../../src/api/emailAccounts", () => ({
 }));
 
 describe("EmailAccount", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   it("renders the add account page", () => {
     render(
-      <MemoryRouter initialEntries={["/email-accounts/new"]}>
+      <MemoryRouter
+        initialEntries={[
+          "/email-accounts/new",
+        ]}
+      >
         <Routes>
           <Route
             path="/email-accounts/new"
@@ -40,7 +57,7 @@ describe("EmailAccount", () => {
     ).toBeInTheDocument();
 
     expect(
-      screen.getByLabelText(/^name$/i)
+      screen.getByLabelText(/account name/i)
     ).toBeInTheDocument();
 
     expect(
@@ -52,7 +69,7 @@ describe("EmailAccount", () => {
     ).toBeInTheDocument();
 
     expect(
-      screen.getByLabelText(/^username$/i)
+      screen.getByLabelText(/username/i)
     ).toBeInTheDocument();
 
     expect(
@@ -64,13 +81,23 @@ describe("EmailAccount", () => {
     ).toBeInTheDocument();
 
     expect(
-      screen.getByLabelText(/use secure smtp/i)
+      screen.getByLabelText(/allowed origin/i)
+    ).toBeInTheDocument();
+
+    expect(
+      screen.getByLabelText(
+        /use secure connection/i
+      )
     ).toBeInTheDocument();
   });
 
   it("does not display the contact form embed when adding an account", () => {
     render(
-      <MemoryRouter initialEntries={["/email-accounts/new"]}>
+      <MemoryRouter
+        initialEntries={[
+          "/email-accounts/new",
+        ]}
+      >
         <Routes>
           <Route
             path="/email-accounts/new"
@@ -96,6 +123,7 @@ describe("EmailAccount", () => {
         secure: false,
         username: "sender@example.com",
         from: "sender@example.com",
+        allowedOrigin: "https://example.com",
       },
     });
 
@@ -125,7 +153,7 @@ describe("EmailAccount", () => {
     ).toBeInTheDocument();
 
     expect(
-      screen.getByLabelText(/^name$/i)
+      screen.getByLabelText(/account name/i)
     ).toHaveValue("My SMTP Account");
 
     expect(
@@ -137,12 +165,16 @@ describe("EmailAccount", () => {
     ).toHaveValue(1025);
 
     expect(
-      screen.getByLabelText(/^username$/i)
+      screen.getByLabelText(/username/i)
     ).toHaveValue("sender@example.com");
 
     expect(
       screen.getByLabelText(/from address/i)
     ).toHaveValue("sender@example.com");
+
+    expect(
+      screen.getByLabelText(/allowed origin/i)
+    ).toHaveValue("https://example.com");
   });
 
   it("displays the contact form embed when editing an account with a publicId", async () => {
@@ -156,6 +188,7 @@ describe("EmailAccount", () => {
         secure: false,
         username: "sender@example.com",
         from: "sender@example.com",
+        allowedOrigin: "https://example.com",
       },
     });
 
@@ -181,26 +214,6 @@ describe("EmailAccount", () => {
     ).toBeInTheDocument();
   });
 
-  it("renders the contact form embed when editing a public email account", async () => {
-    render(
-      <MemoryRouter
-        initialEntries={["/email-accounts/account-1/edit"]}
-      >
-        <Routes>
-          <Route
-            path="/email-accounts/:id/edit"
-            element={<EmailAccount />}
-          />
-        </Routes>
-      </MemoryRouter>
-    );
-
-    expect(
-      await screen.findByText(/Website contact form/i)
-    ).toBeInTheDocument();
-  });
-
-
   it("does not display the contact form embed if the account has no publicId", async () => {
     emailAccountsApi.getEmailAccount.mockResolvedValue({
       data: {
@@ -211,6 +224,7 @@ describe("EmailAccount", () => {
         secure: false,
         username: "sender@example.com",
         from: "sender@example.com",
+        allowedOrigin: "https://example.com",
       },
     });
 
@@ -242,7 +256,11 @@ describe("EmailAccount", () => {
     const user = userEvent.setup();
 
     render(
-      <MemoryRouter initialEntries={["/email-accounts/new"]}>
+      <MemoryRouter
+        initialEntries={[
+          "/email-accounts/new",
+        ]}
+      >
         <Routes>
           <Route
             path="/email-accounts/new"
@@ -252,9 +270,10 @@ describe("EmailAccount", () => {
       </MemoryRouter>
     );
 
-    const secureInput = screen.getByLabelText(
-      /use secure smtp/i
-    );
+    const secureInput =
+      screen.getByLabelText(
+        /use secure connection/i
+      );
 
     expect(secureInput).not.toBeChecked();
 
@@ -273,12 +292,17 @@ describe("EmailAccount", () => {
     });
 
     render(
-      <MemoryRouter initialEntries={["/email-accounts/new"]}>
+      <MemoryRouter
+        initialEntries={[
+          "/email-accounts/new",
+        ]}
+      >
         <Routes>
           <Route
             path="/email-accounts/new"
             element={<EmailAccount />}
           />
+
           <Route
             path="/email-accounts"
             element={<div>Email Accounts</div>}
@@ -288,7 +312,7 @@ describe("EmailAccount", () => {
     );
 
     await user.type(
-      screen.getByLabelText(/^name$/i),
+      screen.getByLabelText(/account name/i),
       "My SMTP Account"
     );
 
@@ -297,13 +321,14 @@ describe("EmailAccount", () => {
       "smtp.example.com"
     );
 
-    const portInput = screen.getByLabelText(/^port$/i);
+    const portInput =
+      screen.getByLabelText(/^port$/i);
 
     await user.clear(portInput);
     await user.type(portInput, "587");
 
     await user.type(
-      screen.getByLabelText(/^username$/i),
+      screen.getByLabelText(/username/i),
       "sender@example.com"
     );
 
@@ -334,6 +359,7 @@ describe("EmailAccount", () => {
         username: "sender@example.com",
         password: "secret",
         from: "sender@example.com",
+        allowedOrigin: "",
       });
     });
 
@@ -355,6 +381,7 @@ describe("EmailAccount", () => {
         secure: false,
         username: "sender@example.com",
         from: "sender@example.com",
+        allowedOrigin: "https://example.com",
       },
     });
 
@@ -375,6 +402,7 @@ describe("EmailAccount", () => {
             path="/email-accounts/:id/edit"
             element={<EmailAccount />}
           />
+
           <Route
             path="/email-accounts"
             element={<div>Email Accounts</div>}
@@ -387,11 +415,11 @@ describe("EmailAccount", () => {
       name: /edit email account/i,
     });
 
-    const nameInput = screen.getByLabelText(
-      /^name$/i
-    );
+    const nameInput =
+      screen.getByLabelText(/account name/i);
 
     await user.clear(nameInput);
+
     await user.type(
       nameInput,
       "Updated SMTP Account"
@@ -415,6 +443,7 @@ describe("EmailAccount", () => {
           secure: false,
           username: "sender@example.com",
           from: "sender@example.com",
+          allowedOrigin: "https://example.com",
         }
       );
     });
@@ -422,6 +451,87 @@ describe("EmailAccount", () => {
     expect(
       await screen.findByText("Email Accounts")
     ).toBeInTheDocument();
+  });
+
+  it("updates the allowed origin", async () => {
+    const user = userEvent.setup();
+
+    emailAccountsApi.getEmailAccount.mockResolvedValue({
+      data: {
+        _id: "account-1",
+        publicId: "account-public-1",
+        name: "My SMTP Account",
+        host: "127.0.0.1",
+        port: 1025,
+        secure: false,
+        username: "sender@example.com",
+        from: "sender@example.com",
+        allowedOrigin: "https://example.com",
+      },
+    });
+
+    emailAccountsApi.updateEmailAccount.mockResolvedValue({
+      data: {
+        _id: "account-1",
+      },
+    });
+
+    render(
+      <MemoryRouter
+        initialEntries={[
+          "/email-accounts/account-1/edit",
+        ]}
+      >
+        <Routes>
+          <Route
+            path="/email-accounts/:id/edit"
+            element={<EmailAccount />}
+          />
+
+          <Route
+            path="/email-accounts"
+            element={<div>Email Accounts</div>}
+          />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    await screen.findByRole("heading", {
+      name: /edit email account/i,
+    });
+
+    const allowedOriginInput =
+      screen.getByLabelText(/allowed origin/i);
+
+    await user.clear(allowedOriginInput);
+
+    await user.type(
+      allowedOriginInput,
+      "https://new-example.com"
+    );
+
+    await user.click(
+      screen.getByRole("button", {
+        name: /save account/i,
+      })
+    );
+
+    await waitFor(() => {
+      expect(
+        emailAccountsApi.updateEmailAccount
+      ).toHaveBeenCalledWith(
+        "account-1",
+        {
+          name: "My SMTP Account",
+          host: "127.0.0.1",
+          port: 1025,
+          secure: false,
+          username: "sender@example.com",
+          from: "sender@example.com",
+          allowedOrigin: "https://new-example.com",
+        }
+      );
+    });
   });
 
   it("shows an error when loading the account fails", async () => {
@@ -464,6 +574,7 @@ describe("EmailAccount", () => {
         secure: false,
         username: "sender@example.com",
         from: "sender@example.com",
+        allowedOrigin: "https://example.com",
       },
     });
 
@@ -478,6 +589,7 @@ describe("EmailAccount", () => {
             path="/email-accounts/:id/edit"
             element={<EmailAccount />}
           />
+
           <Route
             path="/email-accounts"
             element={<div>Email Accounts</div>}
