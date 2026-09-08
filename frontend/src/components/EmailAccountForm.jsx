@@ -70,7 +70,7 @@ export default function EmailAccountForm({
   }
 
   return (
-    <form className="card" onSubmit={submit}>
+    <form className="form-card email-account-form" onSubmit={submit}>
       <label>
         Account name
         <input
