@@ -687,3 +687,82 @@ tbody tr:last-child td {
   }
 }
 
+/* Email account form */
+
+.email-account-form {
+  width: 100%;
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+.email-account-form > label {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-bottom: 18px;
+}
+
+.email-account-form .form-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 160px;
+  gap: 18px;
+  margin-bottom: 18px;
+}
+
+.email-account-form .form-row label {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.email-account-form input {
+  width: 100%;
+  min-width: 0;
+}
+
+.email-account-form .checkbox {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 9px;
+  margin: 20px 0;
+}
+
+.email-account-form .checkbox input {
+  width: auto;
+  flex: 0 0 auto;
+}
+
+.email-account-form .actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+  margin-top: 25px;
+}
+
+/* Mobile */
+@media (max-width: 700px) {
+  .email-account-form {
+    max-width: 100%;
+  }
+
+  .email-account-form .form-row {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .email-account-form .form-row label {
+    margin-bottom: 18px;
+  }
+
+  .email-account-form .actions {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+
+  .email-account-form .actions button {
+    width: 100%;
+  }
+}
+

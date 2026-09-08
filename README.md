@@ -197,4 +197,23 @@ docker pull ghcr.io/bsccorp/contact-form-web:latest
 
 If both work, your authentication is fixed.
 
+## Deploy
 
+Merge feature branch to master and:
+
+```
+git push
+```
+
+The workflow allows for rollbacks, so Docker images aren't pruned automatically. You'll need to do this periodically:
+
+```
+docker image prune -f
+```
+
+
+## Rollback
+
+Select the _Rollback Production_ workflow at GitHub -> Actions.
+
+Enter the desired Git SHA.
