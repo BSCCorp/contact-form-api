@@ -1,0 +1,26 @@
+name: Rollback Production
+
+on:
+  workflow_dispatch:
+    inputs:
+      commit:
+        description: "Git SHA to deploy"
+        required: true
+        type: string
+
+jobs:
+  rollback:
+    runs-on: ubuntu-latest
+
+    environment:
+      name: production
+
+    steps:
+      - name: Roll back production
+        run: |
+          echo "Rolling back to ${{ inputs.commit }}"
+
+          # Your deployment command here.
+          # It should deploy the existing artifact
+          # associated with this commit.
+
