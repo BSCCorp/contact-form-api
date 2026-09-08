@@ -29,7 +29,7 @@ test.describe("Contact Forms API", () => {
       const response = await request.post(
         `/api/contact-forms/public/${account.data.publicId}`,
         {
-          form: {
+          data: {
             name: "Jane Doe",
             email: "jane@example.com",
             subject: "Test contact form",
@@ -340,6 +340,88 @@ test.describe("Contact Forms API", () => {
 
       expect(body).toContain("Message sent");
       expect(body).toContain("Thanks for getting in touch");
+    });
+
+    test("redirects back to the allowed origin after 5 seconds", async ({
+      request,
+    }) => {
+      const user = await createTestUser(request);
+
+      const account = await createEmailAccount(
+        request,
+        user.token,
+        {
+          allowedOrigin: "https://example.com",
+        }
+      );
+
+      const response = await request.post(
+        `/api/contact-forms/public/${account.data.publicId}`,
+        {
+          form: {
+            name: "Jane Doe",
+            email: "jane@example.com",
+            subject: "Test redirect",
+            message:
+              "Testing the success page redirect.",
+            allowedOrigin: "https://example.com",
+          },
+        }
+      );
+
+      expect(response.status()).toBe(200);
+
+      expect(
+        response.headers()["content-type"]
+      ).toContain("text/html");
+
+      const html = await response.text();
+
+      expect(html).toContain("Message sent");
+      expect(html).toContain(
+        "https://example.com"
+      );
+
+      expect(html).toContain("5000");
+    });
+
+    test("uses the configured allowed origin instead of a submitted origin", async ({
+      request,
+    }) => {
+      const user = await createTestUser(request);
+
+      const account = await createEmailAccount(
+        request,
+        user.token,
+        {
+          allowedOrigin: "https://example.com",
+        }
+      );
+
+      const response = await request.post(
+        `/api/contact-forms/public/${account.data.publicId}`,
+        {
+          form: {
+            name: "Jane Doe",
+            email: "jane@example.com",
+            subject: "Test redirect security",
+            message: "Testing redirect security.",
+            allowedOrigin: "https://evil.example",
+          },
+        }
+      );
+
+      expect(response.status()).toBe(200);
+
+      const html = await response.text();
+
+      expect(html).toContain(
+        "https://example.com"
+      );
+
+      expect(html).not.toContain(
+        "https://evil.example"
+      );
     });
   });
 
@@ -1108,6 +1190,8 @@ test.describe("Contact Forms API", () => {
       expect(response.status()).toBe(401);
     });
   });
+
+
 });
 
 

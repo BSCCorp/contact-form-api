@@ -6,6 +6,22 @@ const emailSchema = z
   .email()
   .max(320);
 
+const originSchema = z
+  .string()
+  .trim()
+  .url()
+  .refine((value) => {
+    const url = new URL(value);
+
+    return (
+      (url.protocol === "http:" ||
+        url.protocol === "https:") &&
+      url.pathname === "/" &&
+      url.search === "" &&
+      url.hash === ""
+    );
+  }, "Must be a valid HTTP or HTTPS origin");
+
 const baseEmailAccountSchema = z.object({
   name: z
     .string()
@@ -35,6 +51,8 @@ const baseEmailAccountSchema = z.object({
     .max(1000),
 
   from: emailSchema,
+
+  allowedOrigin: originSchema,
 });
 
 const createEmailAccountSchema =
@@ -55,7 +73,7 @@ const emailAccountIdSchema = z.object({
       /^[a-f\d]{24}$/i,
       "Invalid email account ID"
     ),
-});
+  });
 
 module.exports = {
   createEmailAccountSchema,

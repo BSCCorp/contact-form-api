@@ -1,12 +1,6 @@
-// src/modules/contactForms/contactForm.controller.js
-
 const contactFormService = require("./contactForm.service.js");
 
-async function create(
-  req,
-  res,
-  next
-) {
+async function create(req, res, next) {
   try {
     const contactForm =
       await contactFormService.createContactForm(
@@ -22,11 +16,30 @@ async function create(
 
 async function createPublic(req, res, next) {
   try {
-    const contactForm =
+    const result =
       await contactFormService.createPublicContactForm(
         req.params.publicId,
         req.body
       );
+
+    /*
+     * Only redirect back to the configured origin when the
+     * submission explicitly includes allowedOrigin.
+     *
+     * The submitted value is NOT trusted. The service returns
+     * the origin configured on the email account.
+     */
+    if (
+      req.body.allowedOrigin &&
+      result.allowedOrigin
+    ) {
+      return res.redirect(
+        303,
+        `/api/contact-forms/public/success?origin=${encodeURIComponent(
+          result.allowedOrigin
+        )}`
+      );
+    }
 
     return res.redirect(
       303,
@@ -37,11 +50,7 @@ async function createPublic(req, res, next) {
   }
 }
 
-async function list(
-  req,
-  res,
-  next
-) {
+async function list(req, res, next) {
   try {
     const forms =
       await contactFormService.getContactForms(
@@ -88,5 +97,4 @@ module.exports = {
   getOne,
   remove,
 };
-
 

@@ -102,6 +102,7 @@ test.describe("Email Accounts API", () => {
             username: "sender@example.com",
             password: "secret-password",
             from: "sender@example.com",
+            allowedOrigin: "http://example.com",
           },
         }
       );
@@ -941,6 +942,70 @@ test.describe("Email Accounts API", () => {
       );
 
     expect(emailAccount.password).toBe(password);
+  });
+
+  test("normalizes the allowed origin", async ({
+    request,
+  }) => {
+    const user = await createTestUser(request);
+
+    const response = await request.post(
+      "/api/email-accounts",
+      {
+        headers: {
+          Authorization:
+            `Bearer ${user.token}`,
+        },
+        data: {
+          name: "Test Account",
+          host: "smtp.example.com",
+          port: 587,
+          secure: false,
+          username: "sender@example.com",
+          password: "password",
+          from: "sender@example.com",
+          allowedOrigin:
+            " HTTPS://Example.COM/ ",
+        },
+      }
+    );
+
+    expect(response.status()).toBe(201);
+
+    const body = await response.json();
+
+    expect(body.data.allowedOrigin).toBe(
+      "https://example.com"
+    );
+  });
+
+  test("rejects an origin containing a path", async ({
+    request,
+  }) => {
+    const user = await createTestUser(request);
+
+    const response = await request.post(
+      "/api/email-accounts",
+      {
+        headers: {
+          Authorization:
+            `Bearer ${user.token}`,
+        },
+        data: {
+          name: "Test Account",
+          host: "smtp.example.com",
+          port: 587,
+          secure: false,
+          username: "sender@example.com",
+          password: "password",
+          from: "sender@example.com",
+          allowedOrigin:
+            "https://example.com/contact",
+        },
+      }
+    );
+
+    expect(response.status()).toBe(400);
   });
 });
 

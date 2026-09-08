@@ -18,6 +18,11 @@ const emailAccountSchema = new mongoose.Schema(
       default: randomUUID,
     },
 
+    allowedOrigin: {
+      type: String,
+      trim: true,
+    },
+
     name: {
       type: String,
       required: true,

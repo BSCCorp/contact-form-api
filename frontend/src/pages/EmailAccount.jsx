@@ -6,16 +6,18 @@ import {
 
 import * as emailAccountsApi from "../api/emailAccounts";
 
+import EmailAccountForm from "../components/EmailAccountForm";
 import ContactFormEmbed from "../components/ContactFormEmbed";
 
 const initialForm = {
   name: "",
   host: "",
-  port: 1025,
+  port: 587,
   secure: false,
   username: "",
   password: "",
   from: "",
+  allowedOrigin: "",
 };
 
 export default function EmailAccount() {
@@ -24,17 +26,10 @@ export default function EmailAccount() {
 
   const editing = Boolean(id);
 
-  const [form, setForm] =
-    useState(initialForm);
-
-  const [loading, setLoading] =
-    useState(editing);
-
-  const [saving, setSaving] =
-    useState(false);
-
-  const [error, setError] =
-    useState("");
+  const [form, setForm] = useState(initialForm);
+  const [loading, setLoading] = useState(editing);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     if (!editing) {
@@ -58,43 +53,15 @@ export default function EmailAccount() {
       });
   }, [id, editing]);
 
-  function updateField(field, value) {
-    setForm((current) => ({
-      ...current,
-      [field]: value,
-    }));
-  }
-
-  async function handleSubmit(event) {
-    event.preventDefault();
-
-    setError("");
+  async function handleSubmit(data) {
     setSaving(true);
+    setError("");
 
     try {
-      const data = {
-        name: form.name,
-        host: form.host,
-        port: Number(form.port),
-        secure: form.secure,
-        username: form.username,
-        from: form.from,
-      };
-
-      // Don't send an empty password during
-      // an update.
-      if (form.password) {
-        data.password = form.password;
-      }
-
       if (editing) {
-        await emailAccountsApi
-          .updateEmailAccount(id, data);
+        await emailAccountsApi.updateEmailAccount(id, data);
       } else {
-        data.password = form.password;
-
-        await emailAccountsApi
-          .createEmailAccount(data);
+        await emailAccountsApi.createEmailAccount(data);
       }
 
       navigate("/email-accounts");
@@ -103,6 +70,10 @@ export default function EmailAccount() {
     } finally {
       setSaving(false);
     }
+  }
+
+  function handleCancel() {
+    navigate("/email-accounts");
   }
 
   if (loading) {
@@ -127,137 +98,13 @@ export default function EmailAccount() {
         </div>
       )}
 
-      <form
-        className="form-card"
+      <EmailAccountForm
+        initialValues={form}
         onSubmit={handleSubmit}
-      >
-        <label>
-          Name
-          <input
-            value={form.name}
-            onChange={(event) =>
-              updateField(
-                "name",
-                event.target.value
-              )
-            }
-            required
-          />
-        </label>
+        onCancel={handleCancel}
+        submitting={saving}
+      />
 
-        <label>
-          SMTP Host
-          <input
-            value={form.host}
-            onChange={(event) =>
-              updateField(
-                "host",
-                event.target.value
-              )
-            }
-            required
-          />
-        </label>
-
-        <label>
-          Port
-          <input
-            type="number"
-            value={form.port}
-            onChange={(event) =>
-              updateField(
-                "port",
-                event.target.value
-              )
-            }
-            required
-          />
-        </label>
-
-        <label>
-          Username
-          <input
-            value={form.username}
-            onChange={(event) =>
-              updateField(
-                "username",
-                event.target.value
-              )
-            }
-            required
-          />
-        </label>
-
-        <label>
-          Password
-          <input
-            type="password"
-            value={form.password}
-            onChange={(event) =>
-              updateField(
-                "password",
-                event.target.value
-              )
-            }
-            required={!editing}
-            placeholder={
-              editing
-                ? "Leave blank to keep current password"
-                : ""
-            }
-          />
-        </label>
-
-        <label>
-          From address
-          <input
-            type="email"
-            value={form.from}
-            onChange={(event) =>
-              updateField(
-                "from",
-                event.target.value
-              )
-            }
-          />
-        </label>
-
-        <label className="checkbox">
-          <input
-            type="checkbox"
-            checked={form.secure}
-            onChange={(event) =>
-              updateField(
-                "secure",
-                event.target.checked
-              )
-            }
-          />
-
-          Use secure SMTP
-        </label>
-
-        <div className="form-actions">
-          <button
-            type="button"
-            className="secondary"
-            onClick={() =>
-              navigate("/email-accounts")
-            }
-          >
-            Cancel
-          </button>
-
-          <button
-            type="submit"
-            disabled={saving}
-          >
-            {saving
-              ? "Saving..."
-              : "Save account"}
-          </button>
-        </div>
-      </form>
       {editing && form.publicId && (
         <ContactFormEmbed account={form} />
       )}

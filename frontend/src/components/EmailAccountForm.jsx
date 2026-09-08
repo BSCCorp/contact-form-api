@@ -8,6 +8,7 @@ const emptyForm = {
   username: "",
   password: "",
   from: "",
+  allowedOrigin: "",
 };
 
 export default function EmailAccountForm({
@@ -22,8 +23,7 @@ export default function EmailAccountForm({
   });
 
   function change(event) {
-    const { name, value, type, checked } =
-      event.target;
+    const { name, value, type, checked } = event.target;
 
     setForm({
       ...form,
@@ -39,12 +39,31 @@ export default function EmailAccountForm({
   async function submit(event) {
     event.preventDefault();
 
-    const data = { ...form };
+    const {
+      name,
+      host,
+      port,
+      secure,
+      username,
+      password,
+      from,
+      allowedOrigin,
+    } = form;
+
+    const data = {
+      name,
+      host,
+      port,
+      secure,
+      username,
+      from,
+      allowedOrigin,
+    };
 
     // An empty password means don't change it
     // when editing an existing account.
-    if (!data.password) {
-      delete data.password;
+    if (password) {
+      data.password = password;
     }
 
     await onSubmit(data);
@@ -128,6 +147,17 @@ export default function EmailAccountForm({
           type="email"
           value={form.from}
           onChange={change}
+        />
+      </label>
+
+      <label>
+        Allowed origin
+        <input
+          name="allowedOrigin"
+          type="url"
+          value={form.allowedOrigin}
+          onChange={change}
+          placeholder="https://example.com"
         />
       </label>
 
