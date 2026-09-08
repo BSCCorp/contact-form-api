@@ -1,6 +1,7 @@
 function generateContactFormHtml(
   publicId,
-  apiUrl = ""
+  apiUrl = "",
+  allowedOrigin = ""
 ) {
   let baseUrl = apiUrl.replace(/\/+$/, "");
 
@@ -11,6 +12,12 @@ function generateContactFormHtml(
   const action = `${baseUrl}/contact-forms/public/${publicId}`;
 
   return `<form action="${action}" method="POST">
+  <input
+    type="hidden"
+    name="allowedOrigin"
+    value="${allowedOrigin}"
+  />
+
   <div>
     <label for="contact-name">Name</label>
     <input

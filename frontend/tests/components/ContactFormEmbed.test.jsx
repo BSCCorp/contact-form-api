@@ -43,6 +43,7 @@ describe("ContactFormEmbed", () => {
       <ContactFormEmbed
         account={{
           publicId: "contact-form-public-123",
+          allowedOrigin: "https://www.example.com",
         }}
       />
     );
@@ -98,6 +99,25 @@ describe("ContactFormEmbed", () => {
 
     expect(textarea.value).toContain(
       "contact-forms/public/contact-form-public-123"
+    );
+  });
+
+  it("includes the allowed origin as a hidden field", () => {
+    renderComponent();
+
+    const html =
+      screen.getByLabelText("Contact form HTML").value;
+
+    expect(html).toContain(
+      'type="hidden"'
+    );
+
+    expect(html).toContain(
+      'name="allowedOrigin"'
+    );
+
+    expect(html).toContain(
+      'value="https://www.example.com"'
     );
   });
 
@@ -195,8 +215,6 @@ describe("ContactFormEmbed", () => {
     await act(async () => {
       button.click();
 
-      // Wait for navigator.clipboard.writeText()
-      // and the resulting React state update.
       await Promise.resolve();
     });
 
@@ -238,7 +256,6 @@ describe("ContactFormEmbed", () => {
     await act(async () => {
       button.click();
 
-      // Allow the clipboard promise to resolve.
       await Promise.resolve();
     });
 
@@ -264,6 +281,7 @@ describe("ContactFormEmbed", () => {
       <ContactFormEmbed
         account={{
           publicId: "abc123",
+          allowedOrigin: "https://www.example.com",
         }}
       />
     );
@@ -279,4 +297,43 @@ describe("ContactFormEmbed", () => {
       "contact-form-public-123"
     );
   });
+
+  it("updates the generated HTML when the allowed origin changes", () => {
+    const { rerender } = render(
+      <ContactFormEmbed
+        account={{
+          publicId: "abc123",
+          allowedOrigin: "https://old.example.com",
+        }}
+      />
+    );
+
+    let html =
+      screen.getByLabelText("Contact form HTML").value;
+
+    expect(html).toContain(
+      'value="https://old.example.com"'
+    );
+
+    rerender(
+      <ContactFormEmbed
+        account={{
+          publicId: "abc123",
+          allowedOrigin: "https://new.example.com",
+        }}
+      />
+    );
+
+    html =
+      screen.getByLabelText("Contact form HTML").value;
+
+    expect(html).toContain(
+      'value="https://new.example.com"'
+    );
+
+    expect(html).not.toContain(
+      'value="https://old.example.com"'
+    );
+  });
 });
+

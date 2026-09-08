@@ -9,9 +9,10 @@ function ContactFormEmbed({ account }) {
   const html = useMemo(() => {
     return generateContactFormHtml(
       account.publicId,
-      apiUrl
+      apiUrl,
+      account.allowedOrigin
     );
-  }, [account.publicId, apiUrl]);
+  }, [account.publicId, account.allowedOrigin, apiUrl]);
 
   async function copyHtml() {
     try {
@@ -25,7 +26,6 @@ function ContactFormEmbed({ account }) {
       console.error("Failed to copy HTML:", error);
     }
   }
-
 
   return (
     <section>

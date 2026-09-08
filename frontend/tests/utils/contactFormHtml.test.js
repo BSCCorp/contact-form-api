@@ -40,9 +40,46 @@ describe("generateContactFormHtml", () => {
     );
   });
 
+  it("includes the allowed origin as a hidden field", () => {
+    const html = generateContactFormHtml(
+      "abc123",
+      "https://api.example.com",
+      "https://www.example.com"
+    );
+
+    expect(html).toContain(
+      'type="hidden"'
+    );
+
+    expect(html).toContain(
+      'name="allowedOrigin"'
+    );
+
+    expect(html).toContain(
+      'value="https://www.example.com"'
+    );
+  });
+
+  it("uses an empty allowed origin when none is provided", () => {
+    const html = generateContactFormHtml(
+      "abc123",
+      "https://api.example.com"
+    );
+
+    expect(html).toContain(
+      'name="allowedOrigin"'
+    );
+
+    expect(html).toContain(
+      'value=""'
+    );
+  });
+
   it("does not expose SMTP credentials", () => {
     const html = generateContactFormHtml(
-      "abc123"
+      "abc123",
+      "",
+      "https://www.example.com"
     );
 
     expect(html).not.toContain("password");
@@ -102,4 +139,3 @@ describe("generateContactFormHtml", () => {
     );
   });
 });
-
