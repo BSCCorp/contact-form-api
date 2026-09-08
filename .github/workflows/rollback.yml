@@ -17,10 +17,43 @@ jobs:
 
     steps:
       - name: Roll back production
-        run: |
-          echo "Rolling back to ${{ inputs.commit }}"
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            set -e
 
-          # Your deployment command here.
-          # It should deploy the existing artifact
-          # associated with this commit.
+            cd /opt/contact-form
+
+            SHA="${{ inputs.commit }}"
+
+            echo "Rolling back production to:"
+            echo "  $SHA"
+            echo
+
+            echo "Updating production image tags..."
+
+            sed -i "s/^WEB_IMAGE_TAG=.*/WEB_IMAGE_TAG=$SHA/" .env
+            sed -i "s/^API_IMAGE_TAG=.*/API_IMAGE_TAG=$SHA/" .env
+
+            echo
+            echo "Current image configuration:"
+            docker compose -f docker-compose.prod.yml config | grep 'image:'
+
+            echo
+            echo "Pulling images..."
+            docker compose -f docker-compose.prod.yml pull
+
+            echo
+            echo "Recreating containers..."
+            docker compose -f docker-compose.prod.yml up -d --force-recreate
+
+            echo
+            echo "Running containers:"
+            docker ps --format 'table {{.Names}}\t{{.Image}}\t{{.Status}}'
+
+            echo
+            echo "Rollback completed successfully."
 
