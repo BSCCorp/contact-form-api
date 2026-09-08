@@ -1,21 +1,55 @@
-function generateContactFormHtml(
-  publicId,
-  apiUrl = "",
-  allowedOrigin = ""
-) {
-  let baseUrl = apiUrl.replace(/\/+$/, "");
+function escapeHtmlAttribute(value) {
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
 
-  if (!baseUrl.endsWith("/api")) {
-    baseUrl += "/api";
+function buildPublicContactFormAction(
+  publicId,
+  apiUrl
+) {
+  const path =
+    `/contact-forms/public/${encodeURIComponent(publicId)}`;
+
+  if (!apiUrl) {
+    return `/api${path}`;
   }
 
-  const action = `${baseUrl}/contact-forms/public/${publicId}`;
+  const normalizedApiUrl =
+    String(apiUrl).replace(/\/+$/, "");
 
-  return `<form action="${action}" method="POST">
+  if (normalizedApiUrl.endsWith("/api")) {
+    return `${normalizedApiUrl}${path}`;
+  }
+
+  return `${normalizedApiUrl}/api${path}`;
+}
+
+function generateContactFormHtml(
+  publicId,
+  allowedOrigin,
+  apiUrl
+) {
+  const action = buildPublicContactFormAction(
+    publicId,
+    apiUrl
+  );
+
+  const escapedAction =
+    escapeHtmlAttribute(action);
+
+  const escapedAllowedOrigin =
+    escapeHtmlAttribute(
+      allowedOrigin || ""
+    );
+
+  return `<form action="${escapedAction}" method="POST">
   <input
     type="hidden"
     name="allowedOrigin"
-    value="${allowedOrigin}"
+    value="${escapedAllowedOrigin}"
   />
 
   <div>
@@ -68,4 +102,3 @@ function generateContactFormHtml(
 module.exports = {
   generateContactFormHtml,
 };
-

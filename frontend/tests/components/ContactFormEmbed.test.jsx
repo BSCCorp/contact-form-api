@@ -43,7 +43,7 @@ describe("ContactFormEmbed", () => {
       <ContactFormEmbed
         account={{
           publicId: "contact-form-public-123",
-          allowedOrigin: "https://www.example.com",
+          allowedOrigin: "https://example.com",
         }}
       />
     );
@@ -117,7 +117,7 @@ describe("ContactFormEmbed", () => {
     );
 
     expect(html).toContain(
-      'value="https://www.example.com"'
+      'value="https://example.com"'
     );
   });
 
@@ -281,7 +281,7 @@ describe("ContactFormEmbed", () => {
       <ContactFormEmbed
         account={{
           publicId: "abc123",
-          allowedOrigin: "https://www.example.com",
+          allowedOrigin: "https://example.com",
         }}
       />
     );
@@ -333,6 +333,25 @@ describe("ContactFormEmbed", () => {
 
     expect(html).not.toContain(
       'value="https://old.example.com"'
+    );
+  });
+
+  it("includes the allowed origin as a hidden input", () => {
+    renderComponent();
+
+    const html =
+      screen.getByLabelText("Contact form HTML").value;
+
+    expect(html).toContain(
+      'type="hidden"'
+    );
+
+    expect(html).toContain(
+      'name="allowedOrigin"'
+    );
+
+    expect(html).toContain(
+      'value="https://example.com"'
     );
   });
 });

@@ -9,10 +9,14 @@ function ContactFormEmbed({ account }) {
   const html = useMemo(() => {
     return generateContactFormHtml(
       account.publicId,
-      apiUrl,
-      account.allowedOrigin
+      account.allowedOrigin,
+      apiUrl
     );
-  }, [account.publicId, account.allowedOrigin, apiUrl]);
+  }, [
+    account.publicId,
+    account.allowedOrigin,
+    apiUrl,
+  ]);
 
   async function copyHtml() {
     try {
@@ -51,4 +55,3 @@ function ContactFormEmbed({ account }) {
 }
 
 export default ContactFormEmbed;
-

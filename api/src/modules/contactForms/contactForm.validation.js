@@ -55,6 +55,18 @@ const publicContactFormSchema = z.object({
     .trim()
     .min(1, "Message is required")
     .max(5000),
+
+  /*
+   * This field is only used to indicate that the form wants
+   * the success page to redirect back to the configured origin.
+   *
+   * The server NEVER trusts this value as the redirect target.
+   */
+  allowedOrigin: z
+    .string()
+    .trim()
+    .url()
+    .optional(),
 });
 
 const contactFormIdSchema = z.object({

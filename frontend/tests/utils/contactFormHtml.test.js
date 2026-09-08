@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+
 import {
   generateContactFormHtml,
 } from "../../src/utils/contactFormHtml";
@@ -15,6 +16,25 @@ describe("generateContactFormHtml", () => {
 
     expect(html).toContain(
       'method="POST"'
+    );
+  });
+
+  it("contains the allowed origin as a hidden input", () => {
+    const html = generateContactFormHtml(
+      "abc123",
+      "https://example.com"
+    );
+
+    expect(html).toContain(
+      'type="hidden"'
+    );
+
+    expect(html).toContain(
+      'name="allowedOrigin"'
+    );
+
+    expect(html).toContain(
+      'value="https://example.com"'
     );
   });
 
@@ -40,46 +60,9 @@ describe("generateContactFormHtml", () => {
     );
   });
 
-  it("includes the allowed origin as a hidden field", () => {
-    const html = generateContactFormHtml(
-      "abc123",
-      "https://api.example.com",
-      "https://www.example.com"
-    );
-
-    expect(html).toContain(
-      'type="hidden"'
-    );
-
-    expect(html).toContain(
-      'name="allowedOrigin"'
-    );
-
-    expect(html).toContain(
-      'value="https://www.example.com"'
-    );
-  });
-
-  it("uses an empty allowed origin when none is provided", () => {
-    const html = generateContactFormHtml(
-      "abc123",
-      "https://api.example.com"
-    );
-
-    expect(html).toContain(
-      'name="allowedOrigin"'
-    );
-
-    expect(html).toContain(
-      'value=""'
-    );
-  });
-
   it("does not expose SMTP credentials", () => {
     const html = generateContactFormHtml(
-      "abc123",
-      "",
-      "https://www.example.com"
+      "abc123"
     );
 
     expect(html).not.toContain("password");
@@ -98,6 +81,7 @@ describe("generateContactFormHtml", () => {
   it("supports a separate API URL", () => {
     const html = generateContactFormHtml(
       "abc123",
+      "https://example.com",
       "https://api.example.com"
     );
 
@@ -109,6 +93,7 @@ describe("generateContactFormHtml", () => {
   it("does not add a trailing slash to the API URL", () => {
     const html = generateContactFormHtml(
       "abc123",
+      "https://example.com",
       "https://api.example.com"
     );
 
@@ -120,22 +105,36 @@ describe("generateContactFormHtml", () => {
   it("generates an absolute public contact form URL", () => {
     const html = generateContactFormHtml(
       "abc123",
-      "https://0yy.ca/api"
+      "https://example.com",
+      "https://somesite.com/api"
     );
 
     expect(html).toContain(
-      'action="https://0yy.ca/api/contact-forms/public/abc123"'
+      'action="https://somesite.com/api/contact-forms/public/abc123"'
     );
   });
 
   it("does not produce a double slash", () => {
     const html = generateContactFormHtml(
       "abc123",
-      "https://0yy.ca/api/"
+      "https://example.com",
+      "https://somesite.com/api/"
     );
 
     expect(html).toContain(
-      'action="https://0yy.ca/api/contact-forms/public/abc123"'
+      'action="https://somesite.com/api/contact-forms/public/abc123"'
+    );
+  });
+
+  it("escapes the allowed origin", () => {
+    const html = generateContactFormHtml(
+      "abc123",
+      'https://example.com/?x="test"'
+    );
+
+    expect(html).toContain(
+      'value="https://example.com/?x=&quot;test&quot;"'
     );
   });
 });
+

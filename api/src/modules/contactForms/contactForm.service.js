@@ -1,7 +1,9 @@
 const ContactForm = require("./contactForm.model.js");
 const AppError = require("../../utils/AppError.js");
-const { sendMail } = require("../../services/email.service.js");
-const EmailAccount = require("../emailAccounts/emailAccount.model.js");
+const {
+  sendMail,
+} = require("../../services/email.service.js");
+
 const {
   getEmailAccountForSending,
   getPublicEmailAccountForSending,
@@ -61,11 +63,11 @@ async function createContactForm(userId, data) {
 
 async function createPublicContactForm(
   publicId,
-  data,
+  data
 ) {
   const account =
     await getPublicEmailAccountForSending(
-      publicId,
+      publicId
     );
 
   const recipient =
@@ -106,7 +108,6 @@ async function createPublicContactForm(
 
     contactForm.deliveryStatus = "sent";
     contactForm.deliveryError = undefined;
-
   } catch (error) {
     contactForm.deliveryStatus = "failed";
     contactForm.deliveryError = error.message;
@@ -121,9 +122,11 @@ async function createPublicContactForm(
 
   await contactForm.save();
 
-  return contactForm;
+  return {
+    contactForm,
+    allowedOrigin: account.allowedOrigin,
+  };
 }
-
 
 async function getContactForms(userId) {
   return ContactForm.find({ userId })
@@ -131,11 +134,15 @@ async function getContactForms(userId) {
     .lean();
 }
 
-async function getContactForm(userId, contactFormId) {
-  const contactForm = await ContactForm.findOne({
-    _id: contactFormId,
-    userId,
-  }).lean();
+async function getContactForm(
+  userId,
+  contactFormId
+) {
+  const contactForm =
+    await ContactForm.findOne({
+      _id: contactFormId,
+      userId,
+    }).lean();
 
   if (!contactForm) {
     throw new AppError(

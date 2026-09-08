@@ -1,5 +1,5 @@
 const express = require("express");
-const path = require("path");
+
 const authenticate = require("../../middleware/auth.js");
 const validate = require("../../middleware/validate.js");
 
@@ -17,28 +17,45 @@ const {
   remove,
 } = require("./contactForm.controller.js");
 
+const {
+  generateContactFormSuccessHtml,
+} = require("../../utils/contactFormSuccessHtml.js");
+
 const router = express.Router();
 
-// Public submission MUST come before authenticated routes
+/*
+ * Public submission MUST come before authenticated routes.
+ */
 router.post(
   "/public/:publicId",
   validate(publicContactFormSchema, "body"),
   createPublic
 );
 
+/*
+ * Success page.
+ *
+ * `origin` is optional because the success page is also a
+ * directly accessible endpoint.
+ */
 router.get(
   "/public/success",
   (req, res) => {
-    res.sendFile(
-      path.join(
-        __dirname,
-        "../../public/contact-form-success.html"
-      )
-    );
+    const { origin } = req.query;
+
+    return res
+      .type("html")
+      .send(
+        generateContactFormSuccessHtml(
+          origin || ""
+        )
+      );
   }
 );
 
-// Everything below here requires authentication
+/*
+ * Everything below here requires authentication.
+ */
 router.use(authenticate);
 
 router.post(
@@ -62,3 +79,4 @@ router.delete(
 );
 
 module.exports = router;
+
